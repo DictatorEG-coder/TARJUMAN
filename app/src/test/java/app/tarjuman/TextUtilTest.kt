@@ -32,6 +32,20 @@ class TextUtilTest {
         assertNull(TextUtil.guessLang("hello world"))
     }
 
+    @Test fun chineseLocaleTagsNormalizeToMlKitCode() {
+        assertEquals("zh", TextUtil.normalizeTranslationLanguage("zh-CN"))
+        assertEquals("zh", TextUtil.normalizeTranslationLanguage("zh-Hans"))
+        assertEquals("zh", TextUtil.normalizeTranslationLanguage("zh_SG"))
+        assertEquals("zh", TextUtil.normalizeTranslationLanguage("zh-Latn"))
+        assertEquals("ar", TextUtil.normalizeTranslationLanguage("ar-SA"))
+        assertNull(TextUtil.normalizeTranslationLanguage(null))
+    }
+
+    @Test fun hanExtensionAIsRecognized() {
+        assertTrue(TextUtil.hasHan("\u3400"))
+        assertTrue(TextUtil.hasHan("汉字"))
+    }
+
     @Test fun latinHeavyDetection() {
         assertTrue(TextUtil.isLatinHeavy("Hello, how are you?"))
         assertFalse(TextUtil.isLatinHeavy("こんにちは"))
