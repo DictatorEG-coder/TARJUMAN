@@ -12,7 +12,7 @@
     <string name="perm_granted">✓ ممنوح</string>
     <string name="perm_grant">منح</string>
     <string name="projection_denied">لم تتم الموافقة على التقاط الشاشة</string>
-    <string name="first_run_hint">للعمل دون إنترنت: حمّل نماذج اللغات من «إدارة النماذج» (نحو 30 ميغابايت لكل لغة). الأساسية: العربية والإنجليزية واليابانية والصينية والكورية.</string>
+    <string name="first_run_hint">للعمل دون إنترنت: حمّل نماذج اللغات من «إدارة النماذج» (نحو 30 ميغابايت لكل لغة). الأساسية: العربية والإنجليزية واليابانية والصينية المبسطة والكورية.</string>
     <string name="home_text">ترجمة نص</string>
     <string name="home_image">ترجمة صورة</string>
     <string name="home_doc">ترجمة مستند</string>
@@ -68,7 +68,7 @@
     <string name="set_ocr">لغة النص على الشاشة (OCR)</string>
     <string name="ocr_auto">تلقائي (أبطأ)</string>
     <string name="ocr_latin">لاتيني (إنجليزية وغيرها)</string>
-    <string name="ocr_zh">صينية</string>
+    <string name="ocr_zh">الصينية المبسطة (CapCut / Jianying)</string>
     <string name="ocr_ja">يابانية</string>
     <string name="ocr_ko">كورية</string>
     <string name="ocr_note">التعرف على النص العربي غير مدعوم. اختيار لغة محددة أسرع من التلقائي.</string>
