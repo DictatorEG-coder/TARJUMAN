@@ -22,9 +22,25 @@ object TextUtil {
         return out
     }
 
+    /**
+     * Converts locale-specific language tags to the short codes accepted by ML Kit Translate.
+     * In particular, Chinese UI locales (zh-CN, zh-Hans, zh-SG, zh-TW) use ML Kit's zh model.
+     */
+    fun normalizeTranslationLanguage(code: String?): String? {
+        val value = code?.trim()?.replace('_', '-')?.lowercase()?.takeIf { it.isNotEmpty() } ?: return null
+        return when (value.substringBefore('-')) {
+            "zh" -> "zh"
+            else -> value.substringBefore('-')
+        }
+    }
+
     fun hasHangul(s: String) = s.any { it in '\uAC00'..'\uD7AF' || it in '\u1100'..'\u11FF' }
     fun hasKana(s: String) = s.any { it in '\u3040'..'\u30FF' }
-    fun hasHan(s: String) = s.any { it in '\u4E00'..'\u9FFF' }
+
+    /** Han ideographs, including CJK Extension A and compatibility forms used in Chinese UI text. */
+    fun hasHan(s: String) = s.any {
+        it in '\u3400'..'\u4DBF' || it in '\u4E00'..'\u9FFF' || it in '\uF900'..'\uFAFF'
+    }
 
     fun isLatinHeavy(s: String): Boolean {
         val v = s.filter { !it.isWhitespace() }
