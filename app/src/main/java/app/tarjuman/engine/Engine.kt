@@ -47,18 +47,23 @@ object ModelStore {
     private val mgr get() = RemoteModelManager.getInstance()
 
     suspend fun downloaded(): Set<String> =
-        mgr.getDownloadedModels(TranslateRemoteModel::class.java).await().map { it.language }.toSet()
+        mgr.getDownloadedModels(TranslateRemoteModel::class.java).await()
+            .mapNotNull { TextUtil.normalizeTranslationLanguage(it.language) }.toSet()
 
-    suspend fun isDownloaded(code: String): Boolean =
-        mgr.isModelDownloaded(TranslateRemoteModel.Builder(code).build()).await()
+    suspend fun isDownloaded(code: String): Boolean {
+        val normalized = TextUtil.normalizeTranslationLanguage(code) ?: code
+        return mgr.isModelDownloaded(TranslateRemoteModel.Builder(normalized).build()).await()
+    }
 
     suspend fun download(code: String, wifiOnly: Boolean) {
+        val normalized = TextUtil.normalizeTranslationLanguage(code) ?: code
         val cond = DownloadConditions.Builder().apply { if (wifiOnly) requireWifi() }.build()
-        mgr.download(TranslateRemoteModel.Builder(code).build(), cond).await()
+        mgr.download(TranslateRemoteModel.Builder(normalized).build(), cond).await()
     }
 
     suspend fun delete(code: String) {
-        mgr.deleteDownloadedModel(TranslateRemoteModel.Builder(code).build()).await()
+        val normalized = TextUtil.normalizeTranslationLanguage(code) ?: code
+        mgr.deleteDownloadedModel(TranslateRemoteModel.Builder(normalized).build()).await()
     }
 }
 
@@ -67,9 +72,13 @@ class MlKitOfflineProvider : TranslationProvider {
     override val id = "mlkit-offline"
 
     override suspend fun translate(text: String, source: String?, target: String): TResult {
-        val s = source?.let { TranslateLanguage.fromLanguageTag(it) }
+        val sourceCode = TextUtil.normalizeTranslationLanguage(source)
             ?: throw IllegalStateException("Unknown or unsupported source language / لغة المصدر غير معروفة")
-        val t = TranslateLanguage.fromLanguageTag(target)
+        val targetCode = TextUtil.normalizeTranslationLanguage(target)
+            ?: throw IllegalStateException("Unknown or unsupported target language / لغة الهدف غير معروفة")
+        val s = TranslateLanguage.fromLanguageTag(sourceCode)
+            ?: throw IllegalStateException("Unknown or unsupported source language / لغة المصدر غير معروفة")
+        val t = TranslateLanguage.fromLanguageTag(targetCode)
             ?: throw IllegalStateException("Unsupported target language / لغة الهدف غير مدعومة")
         if (s == t) return TResult(text, id, s)
 
@@ -99,8 +108,11 @@ class LibreTranslateProvider : TranslationProvider {
         withContext(Dispatchers.IO) {
             val base = Prefs.libreUrl.trim().trimEnd('/')
             if (base.isEmpty()) throw IllegalStateException("LibreTranslate URL not set / لم يُحدَّد عنوان الخادم")
-            val body = JSONObject().put("q", text).put("source", source ?: "auto")
-                .put("target", target).put("format", "text")
+            val sourceCode = TextUtil.normalizeTranslationLanguage(source) ?: "auto"
+            val targetCode = TextUtil.normalizeTranslationLanguage(target)
+                ?: throw IllegalStateException("Unknown or unsupported target language / لغة الهدف غير معروفة")
+            val body = JSONObject().put("q", text).put("source", sourceCode)
+                .put("target", targetCode).put("format", "text")
             if (Prefs.libreKey.isNotBlank()) body.put("api_key", Prefs.libreKey)
             val conn = URL("$base/translate").openConnection() as HttpURLConnection
             try {
@@ -129,7 +141,7 @@ object Engine {
     private val online = LibreTranslateProvider()
 
     suspend fun detect(text: String): String? = try {
-        detector.detect(text.take(400))?.substringBefore('-')
+        TextUtil.normalizeTranslationLanguage(detector.detect(text.take(400)))
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {
@@ -137,7 +149,10 @@ object Engine {
     }
 
     suspend fun translate(text: String, source: String?, target: String, modeOverride: String? = null): TResult {
-        val src = source?.takeIf { it != "auto" } ?: detect(text) ?: TextUtil.guessLang(text)
+        val src = source?.takeIf { it != "auto" }?.let { TextUtil.normalizeTranslationLanguage(it) }
+            ?: detect(text) ?: TextUtil.guessLang(text)
+        val tgt = TextUtil.normalizeTranslationLanguage(target)
+            ?: throw IllegalStateException("Unknown or unsupported target language / لغة الهدف غير معروفة")
         val chain: List<TranslationProvider> = when (modeOverride ?: Prefs.engineMode) {
             "offline_only" -> listOf(offline)
             "online_only" -> listOf(online)
@@ -149,7 +164,7 @@ object Engine {
         var engine = ""
         for (piece in TextUtil.chunk(text)) {
             if (piece.isBlank()) { parts.add(piece); continue }
-            val r = translateChunk(chain, piece, src, target)
+            val r = translateChunk(chain, piece, src, tgt)
             parts.add(r.text)
             engine = r.engine
         }
