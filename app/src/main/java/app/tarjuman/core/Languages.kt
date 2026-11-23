@@ -10,7 +10,7 @@ object Languages {
         Lang("fr", "الفرنسية", "French"), Lang("de", "الألمانية", "German"),
         Lang("es", "الإسبانية", "Spanish"), Lang("it", "الإيطالية", "Italian"),
         Lang("pt", "البرتغالية", "Portuguese"), Lang("ru", "الروسية", "Russian"),
-        Lang("tr", "التركية", "Turkish"), Lang("zh", "الصينية", "Chinese"),
+        Lang("tr", "التركية", "Turkish"), Lang("zh", "الصينية المبسطة", "Chinese (Simplified)"),
         Lang("ja", "اليابانية", "Japanese"), Lang("ko", "الكورية", "Korean"),
         Lang("hi", "الهندية", "Hindi"), Lang("fa", "الفارسية", "Persian"),
         Lang("ur", "الأردية", "Urdu"), Lang("id", "الإندونيسية", "Indonesian"),
@@ -23,11 +23,12 @@ object Languages {
     /** Languages the bubble's quick switch cycles through. */
     val quick = listOf("ar", "en", "fr", "de", "es", "tr", "ru")
 
-    /** Core pack for the main use case: foreign -> Arabic. */
+    /** Core pack for the main use case: foreign -> Arabic, including Simplified Chinese. */
     val corePack = listOf("ar", "en", "ja", "zh", "ko")
 
     fun label(code: String): String {
-        val l = all.firstOrNull { it.code == code } ?: return code
+        val normalized = TextUtil.normalizeTranslationLanguage(code) ?: code
+        val l = all.firstOrNull { it.code == normalized } ?: return code
         return if (Locale.getDefault().language == "ar") l.ar else l.en
     }
 }
