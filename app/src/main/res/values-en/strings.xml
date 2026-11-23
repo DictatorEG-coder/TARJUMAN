@@ -12,7 +12,7 @@
     <string name="perm_granted">✓ Granted</string>
     <string name="perm_grant">Grant</string>
     <string name="projection_denied">Screen capture was not approved</string>
-    <string name="first_run_hint">To work offline, download language models from “Models” (about 30 MB per language). Core pack: Arabic, English, Japanese, Chinese, Korean.</string>
+    <string name="first_run_hint">To work offline, download language models from “Models” (about 30 MB per language). Core pack: Arabic, English, Japanese, Simplified Chinese, Korean.</string>
     <string name="home_text">Translate text</string>
     <string name="home_image">Translate image</string>
     <string name="home_doc">Translate document</string>
@@ -68,7 +68,7 @@
     <string name="set_ocr">On-screen text script (OCR)</string>
     <string name="ocr_auto">Auto (slower)</string>
     <string name="ocr_latin">Latin (English etc.)</string>
-    <string name="ocr_zh">Chinese</string>
+    <string name="ocr_zh">Simplified Chinese (CapCut / Jianying)</string>
     <string name="ocr_ja">Japanese</string>
     <string name="ocr_ko">Korean</string>
     <string name="ocr_note">Arabic-script OCR is not supported. Choosing a script is faster than Auto.</string>
